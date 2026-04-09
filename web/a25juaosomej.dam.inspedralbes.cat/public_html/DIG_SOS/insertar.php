@@ -5,18 +5,26 @@ include("conexion.php");
 $error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = trim($_POST['nombre']);
-    $email  = trim($_POST['email']);
+    $titol      = trim($_POST['titol']);
+    $developer  = trim($_POST['developer']);
+    $any        = trim($_POST['any']);
+    $plataforma = trim($_POST['plataforma']);
+    $estat      = trim($_POST['estat']);
+    $genere     = isset($_POST['genere']) ? implode(',', $_POST['genere']) : '';
+    $puntuacio  = intval($_POST['puntuacio']);
+    $notes      = trim($_POST['notes']);
 
-    if (empty($nombre) || empty($email)) {
-        $error = "Tots els camps són obligatoris.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "El format de l'email no és vàlid.";
+    if (empty($titol) || empty($plataforma)) {
+        $error = "El títol i la plataforma són obligatoris.";
     } else {
-        $stmt = mysqli_prepare($conn, "INSERT INTO usuarios (nombre, email) VALUES (?, ?)");
-        mysqli_stmt_bind_param($stmt, "ss", $nombre, $email);
+        $stmt = mysqli_prepare($conn,
+            "INSERT INTO jocs (titol, developer, any_llancament, plataforma, estat, genere, puntuacio, notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        mysqli_stmt_bind_param($stmt, "ssssssiss",
+            $titol, $developer, $any, $plataforma, $estat, $genere, $puntuacio, $notes
+        );
         mysqli_stmt_execute($stmt);
-
         header("Location: listar.php");
         exit;
     }
@@ -28,195 +36,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nou Usuari</title>
+    <title>Afegir Joc — GAME VAULT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: #0d1b2a;
-            color: #c8d8ea;
+            font-family: 'Share Tech Mono', monospace;
+            background: #050a14;
+            color: #e0d4ff;
             min-height: 100vh;
         }
 
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg, transparent, transparent 3px,
+                rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
         header {
-            background: linear-gradient(90deg, #1a2a6c, #1e4db7);
-            padding: 18px 32px;
+            background: #050a14;
+            border-bottom: 2px solid #a855f7;
+            padding: 14px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, .4);
+            position: relative;
         }
 
-        header h1 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #fff;
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -6px; left: 0; right: 0;
+            height: 2px;
+            background: #ff6b00;
+            opacity: .5;
         }
 
-        header a.btn-nou {
-            background: #1e4db7;
-            color: #fff;
+        .logo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 900;
+            color: #a855f7;
+            letter-spacing: 3px;
+        }
+
+        .logo span { color: #ff6b00; }
+
+        header a.btn-back {
+            background: transparent;
+            border: 1px solid #a855f7;
+            color: #a855f7;
             text-decoration: none;
-            padding: 8px 18px;
-            border-radius: 6px;
-            font-size: .85rem;
-            font-weight: 500;
-            border: 1px solid rgba(255, 255, 255, .25);
+            padding: 6px 16px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: .8rem;
+            letter-spacing: 1px;
             transition: background .2s;
         }
 
-        header a.btn-nou:hover {
-            background: #2563eb;
-        }
+        header a.btn-back:hover { background: rgba(168,85,247,.1); }
 
-        .container {
-            max-width: 820px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+        .container { max-width: 540px; margin: 40px auto; padding: 0 20px; }
 
-        .container h2 {
+        .eyebrow { font-size: .7rem; color: #a855f7; opacity: .6; letter-spacing: 3px; margin-bottom: 4px; }
+
+        .page-title {
+            font-family: 'Orbitron', monospace;
             font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #e2eaf5;
-            border-left: 3px solid #2563eb;
-            padding-left: 12px;
+            font-weight: 900;
+            color: #ff6b00;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
         }
+
+        .page-subtitle {
+            font-size: .72rem;
+            color: #a855f7;
+            opacity: .5;
+            letter-spacing: 2px;
+            margin-bottom: 28px;
+        }
+
+        .blink { animation: blink 1.2s step-end infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
         .form-box {
-            background: #12243a;
-            border: 1px solid #1e3a5f;
-            border-radius: 8px;
-            padding: 28px 32px;
-            max-width: 460px;
+            background: #07111f;
+            border: 1px solid #a855f7;
+            padding: 28px;
+            position: relative;
         }
 
-        .form-box label {
-            display: block;
-            font-size: .82rem;
-            font-weight: 500;
-            color: #8aaac8;
-            margin-bottom: 6px;
-            margin-top: 16px;
+        .form-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #a855f7, #ff6b00);
         }
 
-        .form-box label:first-of-type {
-            margin-top: 0;
-        }
-
-        .form-box input {
-            width: 100%;
-            background: #0d1b2a;
-            border: 1px solid #1e3a5f;
-            border-radius: 6px;
-            padding: 10px 14px;
-            color: #c8d8ea;
-            font-family: 'Poppins', sans-serif;
-            font-size: .88rem;
-            outline: none;
-            transition: border .2s;
-        }
-
-        .form-box input:focus {
-            border-color: #2563eb;
-        }
-
-        .form-box input::placeholder {
-            color: #2e4a6a;
-        }
-
-        .form-btns {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .btn-guardar {
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            padding: 9px 20px;
-            border-radius: 6px;
-            font-family: 'Poppins', sans-serif;
-            font-size: .85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background .2s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-guardar:hover {
-            background: #1d4ed8;
-        }
-
-        .btn-cancelar {
-            background: transparent;
-            color: #8aaac8;
-            border: 1px solid #1e3a5f;
-            padding: 9px 20px;
-            border-radius: 6px;
-            font-family: 'Poppins', sans-serif;
-            font-size: .85rem;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all .2s;
-            display: inline-block;
-        }
-
-        .btn-cancelar:hover {
-            border-color: #2563eb;
-            color: #c8d8ea;
-        }
-
-        .error {
-            background: #1f1010;
-            border: 1px solid #dc2626;
-            color: #f87171;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: .85rem;
-            margin-bottom: 16px;
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Llistat d'Usuaris</h1>
-    <a href="listar.php" class="btn-nou">← Tornar</a>
-</header>
-
-<div class="container">
-    <h2>Afegir usuari</h2>
-
-    <div class="form-box">
-        <?php if ($error !== "") { ?>
-            <div class="error"><?php echo htmlspecialchars($error); ?></div>
-        <?php } ?>
-
-        <form method="POST" action="insertar.php">
-            <label for="nombre">Nom</label>
-            <input type="text" id="nombre" name="nombre" placeholder="Ex: Joan García">
-
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Ex: joan@exemple.com">
-
-            <div class="form-btns">
-                <button type="submit" class="btn-guardar">Guardar</button>
-                <a href="listar.php" class="btn-cancelar">Cancel·lar</a>
-            </div>
-        </form>
-    </div>
-</div>
-
-</body>
-</html>
+        .form-box::after {
+            content: 'GAME_ENTRY_FORM_v2.4';
+            position: absolute;
+            top: 10px; right: 14px;
