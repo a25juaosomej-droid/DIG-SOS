@@ -1,5 +1,5 @@
 <?php
-
+// GAME VAULT — Connexió a la base de dades
 $host     = "localhost";
 $user     = "a25juaosomej_52";
 $password = "InsPedralbes2025";
