@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         );
         mysqli_stmt_bind_param($stmt, "ssssssisi",
-            $titol, $developer, $any, $plataforma, $estat, $genere, $puntuacio, $notes
+        $titol, $developer, $any, $plataforma, $estat, $genere, $puntuacio, $notes, $id
         );
         mysqli_stmt_execute($stmt);
         header("Location: listar.php");
