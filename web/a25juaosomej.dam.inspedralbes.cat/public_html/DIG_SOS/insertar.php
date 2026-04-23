@@ -20,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "INSERT INTO jocs (titol, developer, any_llancament, plataforma, estat, genere, puntuacio, notes)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         );
-        mysqli_stmt_bind_param($stmt, "ssssssisi",
-        $titol, $developer, $any, $plataforma, $estat, $genere, $puntuacio, $notes, $id
+        mysqli_stmt_bind_param($stmt, "ssssssis",
+            $titol, $developer, $any, $plataforma, $estat, $genere, $puntuacio, $notes
         );
         mysqli_stmt_execute($stmt);
         header("Location: listar.php");
